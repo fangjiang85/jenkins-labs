@@ -33,5 +33,4 @@ spec:
             memory: 2Gi
       volumes:
       - name: jenkins-data
-        persistentVolumeClaim:
-          claimName: jenkins-pvc
+        emptyDir: {}
