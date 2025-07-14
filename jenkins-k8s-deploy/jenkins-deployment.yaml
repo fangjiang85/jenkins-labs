@@ -16,22 +16,26 @@ spec:
         app: jenkins
     spec:
       serviceAccountName: jenkins
+      initContainers:
+        - name: jenkins-init
+          image: busybox
+          command: ['sh', '-c', 'chown -R 1000:1000 /var/jenkins_home']
+          volumeMounts:
+            - name: jenkins-data
+              mountPath: /var/jenkins_home
       containers:
-      - name: jenkins
-        image: jenkins/jenkins:lts
-        ports:
-        - containerPort: 8080
-        - containerPort: 50000  # Agent port
-        volumeMounts:
-        - name: jenkins-data
-          mountPath: /var/jenkins_home
-        resources:
-          requests:
-            cpu: 500m
-            memory: 1Gi
-          limits:
-            cpu: 1
-            memory: 2Gi
+        - name: jenkins
+          image: jenkins/jenkins:lts
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: agent
+              containerPort: 50000
+          volumeMounts:
+            - name: jenkins-data
+              mountPath: /var/jenkins_home
       volumes:
-      - name: jenkins-data
-        emptyDir: {}
+        - name: jenkins-data
+          persistentVolumeClaim:
+            claimName: jenkins-pvc
